@@ -479,12 +479,7 @@ int GetFlagsFromValue(v8::Local<v8::Value> value, MMKeyFlags* flags)
 NAN_METHOD(keyTap)
 {
 	MMKeyFlags flags = MOD_NONE;
-	MMKeyCode key;
-
-	char *k;
-
-	v8::String::Utf8Value kstr(v8::Isolate::GetCurrent(), Nan::To<v8::String>(info[0]).ToLocalChecked());
-	k = *kstr;
+	MMKeyCode key = info[0]->Int32Value(Nan::GetCurrentContext()).FromJust();
 
 	switch (info.Length())
 	{
@@ -505,21 +500,10 @@ NAN_METHOD(keyTap)
 			return Nan::ThrowError("Invalid number of arguments.");
 	}
 
-	switch(CheckKeyCodes(k, &key))
-	{
-		case -1:
-			return Nan::ThrowError("Null pointer in key code.");
-			break;
-		case -2:
-			return Nan::ThrowError("Invalid key code specified.");
-			break;
-		default:
-			toggleKeyCode(key, true, flags);
-			microsleep(keyboardDelay);
-			toggleKeyCode(key, false, flags);
-			microsleep(keyboardDelay);
-			break;
-	}
+	toggleKeyCode(key, true, flags);
+	microsleep(keyboardDelay);
+	toggleKeyCode(key, false, flags);
+	microsleep(keyboardDelay);
 
 	info.GetReturnValue().Set(Nan::New(1));
 }
@@ -528,16 +512,9 @@ NAN_METHOD(keyTap)
 NAN_METHOD(keyToggle)
 {
 	MMKeyFlags flags = MOD_NONE;
-	MMKeyCode key;
+	MMKeyCode key = info[0]->Int32Value(Nan::GetCurrentContext()).FromJust();
 
 	bool down;
-	char *k;
-
-	//Get arguments from JavaScript.
-	Nan::Utf8String kstr(info[0]);
-
-	//Convert arguments to chars.
-	k = *kstr;
 
 	//Check and confirm number of arguments.
 	switch (info.Length())
@@ -582,19 +559,8 @@ NAN_METHOD(keyToggle)
 		}
 	}
 
-	//Get the actual key.
-	switch(CheckKeyCodes(k, &key))
-	{
-		case -1:
-			return Nan::ThrowError("Null pointer in key code.");
-			break;
-		case -2:
-			return Nan::ThrowError("Invalid key code specified.");
-			break;
-		default:
-			toggleKeyCode(key, down, flags);
-			microsleep(keyboardDelay);
-	}
+	toggleKeyCode(key, down, flags);
+	microsleep(keyboardDelay);
 
 	info.GetReturnValue().Set(Nan::New(1));
 }
